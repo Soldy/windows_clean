@@ -18,24 +18,15 @@ class dwordStart {
             return 2;
         if (this->value == this->value_auto)
             return 1;
-        std::cout << "ds - " << this->value << std::endl;
         return 0;
     };
     int disable() {
         this->write(this->value_disabled);
-        if (this->write_open_result != ERROR_SUCCESS)
-            return -1;
-        if (this->write_result == ERROR_SUCCESS)
-            return 0;
-        return -2;
+        return this->writeCheck();
     };
     int enable() {
         this->write(this->value_auto);
-        if (this->write_open_result != ERROR_SUCCESS)
-            return -1;
-        if (this->write_result == ERROR_SUCCESS)
-            return 0;
-        return -2;
+        return this->writeCheck();
     };
   private:
     long read_open_result;
@@ -50,7 +41,6 @@ class dwordStart {
     DWORD value_manual = 3;
     DWORD value_disabled = 4;
     LPCWSTR store = L"SYSTEM\\CurrentControlSet\\services\\Dnscache";
-
     void read() {
         HKEY hkey;
         this->read_open_result = RegOpenKeyEx(
@@ -90,6 +80,13 @@ class dwordStart {
         RegCloseKey(hkey);
 
     };
+    int writeCheck(){
+        if (this->write_open_result != ERROR_SUCCESS)
+            return -1;
+        if (this->write_result == ERROR_SUCCESS)
+            return 0;
+        return -2;
+    }
 };
 
 
