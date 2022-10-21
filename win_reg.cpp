@@ -69,12 +69,12 @@ class dwordStart {
             KEY_WRITE,
             &hkey
         );
-        this->write_result = RegSetKeyValue(
+        this->write_result = RegSetValueEx(
             hkey,
             L"Start",
             0,
             REG_DWORD,
-            &nbc,
+            (BYTE *)&nbc,
             sizeof(DWORD)
         );
         RegCloseKey(hkey);
