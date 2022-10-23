@@ -1,9 +1,17 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include <Windows.h>
-
-class DwordAbstract {
+ 
+class ServiceDword {
   public:
+    ServiceDword(
+        std::string name,
+        LPCWSTR store
+    ) {
+        this->name = name;
+        this->store = store;
+    };
     int check() {
         this->read();
         if (this->read_open_result != ERROR_SUCCESS)
@@ -20,6 +28,9 @@ class DwordAbstract {
             return 1;
         return 0;
     };
+    std::string getName() {
+        return this->name;
+    };
     int disable() {
         this->write(this->value_disabled);
         return this->writeCheck();
@@ -28,14 +39,6 @@ class DwordAbstract {
         this->write(this->value_auto);
         return this->writeCheck();
     };
-    void init(
-      std::string name,
-      LPCWSTR store
-    ){
-        this->name = name;
-        this->store = store;
-
-    }
   private:
     long read_open_result;
     long read_result;
@@ -54,7 +57,7 @@ class DwordAbstract {
         HKEY hkey;
         this->read_open_result = RegOpenKeyEx(
             HKEY_LOCAL_MACHINE,
-            this->store(),
+            this->store,
             0,
             KEY_READ,
             &hkey
@@ -64,7 +67,7 @@ class DwordAbstract {
             L"Start",
             NULL,
             &this->data_type,
-            (BYTE *)& this->value,
+            (BYTE*)&this->value,
             &this->data_size
         );
         RegCloseKey(hkey);
@@ -73,7 +76,7 @@ class DwordAbstract {
         HKEY hkey;
         this->write_open_result = RegOpenKeyEx(
             HKEY_LOCAL_MACHINE,
-            this->store(),
+            this->store,
             0,
             KEY_WRITE,
             &hkey
@@ -83,13 +86,13 @@ class DwordAbstract {
             L"Start",
             0,
             REG_DWORD,
-            (BYTE *)&nbc,
+            (BYTE*)&nbc,
             sizeof(DWORD)
         );
         RegCloseKey(hkey);
-
+ 
     };
-    int writeCheck(){
+    int writeCheck() {
         if (this->write_open_result != ERROR_SUCCESS)
             return -1;
         if (this->write_result == ERROR_SUCCESS)
@@ -97,20 +100,36 @@ class DwordAbstract {
         return -2;
     }
 };
-
-
-
-class DnsCacheClass : public DwordAbstract {
-  private:
-    DnsCacheClass(){
-      this->init("DnsCache", L"SYSTEM\\CurrentControlSet\\services\\Dnscache");
-    }
-};
-
-int main(int argc, char* argv[]){
-    DnsCacheClass * dS = new DnsCacheCLass();
-    std::cout << "ds - " << dS->check() << std::endl;
-    std::cout << dS->enable() << std::endl;
-    std::cout << "ds - " << dS->check() << std::endl;
+ 
+ 
+ 
+ 
+int main(int argc, char* argv[]) {
+    std::vector<ServiceDword *> regs;
+    regs.push_back(new ServiceDword("DnsCache", L"SYSTEM\\CurrentControlSet\\services\\Dnscache"));
+    regs.push_back(new ServiceDword("Asus App Service", L"SYSTEM\\CurrentControlSet\\Services\\AsusAppService"));
+    regs.push_back(new ServiceDword("Asus Link Near", L"SYSTEM\\CurrentControlSet\\Services\\ASUSLinkNear"));
+    regs.push_back(new ServiceDword("Asus Link Remote", L"SYSTEM\\CurrentControlSet\\Services\\ASUSLinkRemote"));
+    regs.push_back(new ServiceDword("Asus Optimalization", L"SYSTEM\\CurrentControlSet\\Services\\ASUSOptimization"));
+    regs.push_back(new ServiceDword("Asus PTP Driver", L"SYSTEM\\CurrentControlSet\\Services\\AsusPTPDrv"));
+    regs.push_back(new ServiceDword("Asus SAIO", L"SYSTEM\\CurrentControlSet\\Services\\AsusSAIO"));
+    regs.push_back(new ServiceDword("Asus Software Manager", L"SYSTEM\\CurrentControlSet\\Services\\ASUSSoftwareManager"));
+    regs.push_back(new ServiceDword("Asus Swutch", L"SYSTEM\\CurrentControlSet\\Services\\ASUSSwitch"));
+    regs.push_back(new ServiceDword("Asus System Analysis", L"SYSTEM\\CurrentControlSet\\Services\\ASUSSystemAnalysis"));
+    regs.push_back(new ServiceDword("Asus System Diagnosis", L"SYSTEM\\CurrentControlSet\\Services\\ASUSSystemDiagnosis"));
+    regs.push_back(new ServiceDword("Modem", L"SYSTEM\\CurrentControlSet\\Services\\Modem"));
+    regs.push_back(new ServiceDword("Natural Authentication", L"SYSTEM\\CurrentControlSet\\Services\\NaturalAuthentication"));
+    regs.push_back(new ServiceDword("Telemetry", L"SYSTEM\\CurrentControlSet\\Services\\Telemetry"));
+    regs.push_back(new ServiceDword("xblAuth Manager", L"SYSTEM\\CurrentControlSet\\Services\\XblAuthManager"));
+    regs.push_back(new ServiceDword("xbl game save", L"SYSTEM\\CurrentControlSet\\Services\\XblGameSave"));
+    regs.push_back(new ServiceDword("xboxgip", L"SYSTEM\\CurrentControlSet\\Services\\xboxgip"));
+    regs.push_back(new ServiceDword("XboxGipSvc", L"SYSTEM\\CurrentControlSet\\Services\\XboxGipSvc"));
+    regs.push_back(new ServiceDword("XboxNetApiSvc", L"SYSTEM\\CurrentControlSet\\Services\\XboxNetApiSvc"));
+    for (auto i : regs)
+        std::cout << i->getName() << " : " << i->check() << std::endl;
+    for (auto i : regs)
+        std::cout << i->getName() << " : " << i->disable() << std::endl;
+    for (auto i : regs)
+        std::cout << i->getName() << " : " << i->check() << std::endl;
     return 0;
 }
