@@ -2,7 +2,7 @@
 #include <string>
 #include <Windows.h>
 
-class dwordStart {
+class DwordAbstract {
   public:
     int check() {
         this->read();
@@ -28,6 +28,14 @@ class dwordStart {
         this->write(this->value_auto);
         return this->writeCheck();
     };
+    void init(
+      std::string name,
+      LPCWSTR store
+    ){
+        this->name = name;
+        this->store = store;
+
+    }
   private:
     long read_open_result;
     long read_result;
@@ -40,12 +48,13 @@ class dwordStart {
     DWORD value_delayed = 2;
     DWORD value_manual = 3;
     DWORD value_disabled = 4;
-    LPCWSTR store = L"SYSTEM\\CurrentControlSet\\services\\Dnscache";
+    std::string name;
+    LPCWSTR store;
     void read() {
         HKEY hkey;
         this->read_open_result = RegOpenKeyEx(
             HKEY_LOCAL_MACHINE,
-            this->store,
+            this->store(),
             0,
             KEY_READ,
             &hkey
@@ -64,7 +73,7 @@ class dwordStart {
         HKEY hkey;
         this->write_open_result = RegOpenKeyEx(
             HKEY_LOCAL_MACHINE,
-            this->store,
+            this->store(),
             0,
             KEY_WRITE,
             &hkey
@@ -90,8 +99,16 @@ class dwordStart {
 };
 
 
+
+class DnsCacheClass : public DwordAbstract {
+  private:
+    DnsCacheClass(){
+      this->init("DnsCache", L"SYSTEM\\CurrentControlSet\\services\\Dnscache");
+    }
+};
+
 int main(int argc, char* argv[]){
-    dwordStart* dS = new dwordStart();
+    DnsCacheClass * dS = new DnsCacheCLass();
     std::cout << "ds - " << dS->check() << std::endl;
     std::cout << dS->enable() << std::endl;
     std::cout << "ds - " << dS->check() << std::endl;
